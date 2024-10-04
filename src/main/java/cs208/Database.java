@@ -344,3 +344,72 @@ public class Database {
         System.out.println(Utils.characterRepeat('-', 80));
     }
 }
+    public Student getStudentWithID(int id) {
+        String sql =
+                "SELECT id, first_name, last_name, birth_date\n" +
+                        "FROM students\n" +
+                        "WHERE id = ?;";
+        try (
+                Connection connection = getDatabaseConnection();
+                PreparedStatement sqlStatement = connection.prepareStatement(sql);
+        ) {
+            sqlStatement.setInt(1, id);
+
+            ResultSet resultSet = sqlStatement.executeQuery();
+
+            if (!resultSet.next()) {
+                System.out.println("No student with id = " + id);
+                return null;
+            }
+            int idOfStudent = resultSet.getInt("id");
+            String firstName = resultSet.getString("first_name");
+            String lastName = resultSet.getString("last_name");
+            String birthDate = resultSet.getString("birth_date");
+
+            return new Student(id, firstName, lastName, Date.valueOf(birthDate));
+
+        } catch (SQLException sqlException) {
+            System.out.println("!!! SQLException: failed to query the students table.");
+            System.out.println(sqlException.getMessage());
+
+            return null;
+
+        }
+    }
+
+    public void addNewStudent(Student newStudent) {
+
+
+        String sql =
+                "INSERT INTO STUDENTS (first_name, last_name, birth_date)\n" +
+                        "VALUES (?, ?, ?);";
+        try
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ) {
+            sqlStatement.setString(1, newStudent.getFirstName());
+            sqlStatement.setString(2, newStudent.getLastName());
+            sqlStatement.setString(3, newStudent.getBirthDate().toString());
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+            if (numberOfRowsAffected > 0) {
+
+                ResultSet resultSet = sqlStatement.getGeneratedKeys();
+
+                while (resultSet.next()) {
+                    int newStudentID = resultSet.getInt("last_insert_rowid()");
+
+                    System.out.println("SUCCESSFULLY inserted " + newStudent.toString() + " with id = " + newStudentID);
+                    newStudent.setId(newStudentID);
+                }
+
+                resultSet.close();
+            }
+
+        } catch (SQLException sqlException) {
+            System.out.println("!!! SQLException: failed to add a new student to the students table");
+            System.out.println(sqlException.getMessage());
+        }
+    }
+
