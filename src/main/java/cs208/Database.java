@@ -40,8 +40,7 @@ public class Database {
         System.out.println("databaseConnectionURL = " + databaseConnectionURL);
 
         Connection connection;
-        try
-        {
+        try {
             SQLiteConfig sqLiteConfig = new SQLiteConfig();
             // Enables enforcement of foreign keys constraints in the SQLite database every time we start the application
             sqLiteConfig.enforceForeignKeys(true);
@@ -302,30 +301,21 @@ public class Database {
     }
 
 
-
-
-
-
-
-
-    public Class getClassWithId(int id)
-    {
+    public Class getClassWithId(int id) {
         String sql =
                 "SELECT id, code, title, description, max_students\n" +
-                "FROM classes\n" +
-                "WHERE id = ?;";
+                        "FROM classes\n" +
+                        "WHERE id = ?;";
         try
-        (
-            Connection connection = getDatabaseConnection();
-            PreparedStatement sqlStatement = connection.prepareStatement(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql);
+                ) {
             sqlStatement.setInt(1, id);
 
             ResultSet resultSet = sqlStatement.executeQuery();
 
-            if (resultSet.next() == false)
-            {
+            if (resultSet.next() == false) {
                 System.out.println("No class with id = " + id);
                 return null;
             }
@@ -337,9 +327,7 @@ public class Database {
             int maxStudents = resultSet.getInt("max_students");
 
             return new Class(idOfClass, code, title, description, maxStudents);
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to query the classes table. Make sure you executed the schema.sql and seeds.sql scripts");
             System.out.println(sqlException.getMessage());
 
@@ -347,11 +335,9 @@ public class Database {
         }
     }
 
-    private void printTableHeader(String[] listOfColumnNames)
-    {
+    private void printTableHeader(String[] listOfColumnNames) {
         System.out.print("| ");
-        for (String columnName : listOfColumnNames)
-        {
+        for (String columnName : listOfColumnNames) {
             System.out.print(columnName + " | ");
         }
         System.out.println();
