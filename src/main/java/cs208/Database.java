@@ -343,7 +343,7 @@ public class Database {
         System.out.println();
         System.out.println(Utils.characterRepeat('-', 80));
     }
-}
+
     public Student getStudentWithID(int id) {
         String sql =
                 "SELECT id, first_name, last_name, birth_date\n" +
@@ -412,4 +412,88 @@ public class Database {
             System.out.println(sqlException.getMessage());
         }
     }
+
+    public void updateExistingStudent(Student updatedStudent) throws SQLException {
+        String sql =
+                "UPDATE students\n" +
+                        "SET first_name = ?, last_name = ?, birth_date = ?\n" +
+                        "WHERE id = ?;";
+        try (
+                Connection connection = getDatabaseConnection();
+                PreparedStatement sqlStatement = connection.prepareStatement(sql);
+        ) {
+            sqlStatement.setString(1, updatedStudent.getFirstName());
+            sqlStatement.setString(2, updatedStudent.getLastName());
+            sqlStatement.setString(3, updatedStudent.getBirthDate().toString());
+            sqlStatement.setInt(4, updatedStudent.getId());
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+
+            if (numberOfRowsAffected > 0) {
+                System.out.println("SUCCESSFULLY updated the student with id = " + updatedStudent.getId());
+            } else {
+                System.out.println("!!! WARNING: failed to update the student with id = " + updatedStudent.getId());
+            }
+        }
+    }
+
+    public void deleteExistingStudent(int idOfStudentToDelete) throws SQLException {
+        String sql = "DELETE FROM students WHERE id = ?;";
+        try
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql);
+                ) {
+            sqlStatement.setInt(1, idOfStudentToDelete);
+
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+
+            if (numberOfRowsAffected > 0) {
+                System.out.println("SUCCESSFULLY deleted the student with id = " + idOfStudentToDelete);
+            } else {
+                System.out.println("!!! WARNING: failed to delete the student with id = " + idOfStudentToDelete);
+            }
+
+        }
+
+
+    }
+
+    public void addStudentToClass(int id, int classID) throws SQLException {
+        String sql = "INSERT INTO registered_students (class_id, student_id)\n"
+                + "VALUES (?, ?);";
+        try
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql);
+                ) {
+            sqlStatement.setInt(1, classID);
+            sqlStatement.setInt(2, id);
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+
+        }
+    }
+
+    public void dropStudentFromClass(int studentID, int classID) throws SQLException {
+        String sql =
+                "DELETE FROM registered_students\n"
+                        + "WHERE student_id = ? AND class_id = ?;";
+        try
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql);
+                ) {
+            sqlStatement.setInt(1, studentID);
+            sqlStatement.setInt(2, classID);
+
+            int numberOfRowsAffected = sqlStatement.executeUpdate();
+            System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
+        }
+
+    }
+}
+
 
