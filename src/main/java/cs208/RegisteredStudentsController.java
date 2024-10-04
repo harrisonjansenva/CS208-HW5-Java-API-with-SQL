@@ -2,12 +2,7 @@ package cs208;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLException;
@@ -43,6 +38,34 @@ public class RegisteredStudentsController
      * into the registered_students table in the database.
      */
     // TODO: implement this route
+    @PostMapping("/add_student_to_class")
+    String register(
+            @RequestParam("studentID") int studentID,
+            @RequestParam("classID") int classID
+    )
+    {
+        System.out.println("student id: " + studentID);
+        System.out.println("id of class to register in: " + classID);
+
+        Student testStudent = Main.database.getStudentWithID(studentID);
+        Class testClass = Main.database.getClassWithId(classID);
+
+        if (testStudent == null || testClass == null) {
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student or class not found");
+        }
+
+        try {
+            Main.database.addStudentToClass(studentID, classID);
+            return "Student with id " + studentID + " registered successfully in class " + classID;
+        } catch (SQLException e) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Failed to add student to class " + classID
+                    );
+        }
+    }
+
+
 
 
 
