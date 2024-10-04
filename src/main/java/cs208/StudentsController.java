@@ -117,6 +117,42 @@ public class StudentsController
      * @throws ResponseStatusException: a 404 status code if the student with id = {id} does not exist
      */
     // TODO: implement this route
+    @PutMapping(value = "/students/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    Student update(
+            @PathVariable("id") int id,
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("birthDate") String birthDate
+    )
+    {
+        System.out.println("id          = " + id);
+        System.out.println("firstName   = " + firstName);
+        System.out.println("lastName    = " + lastName);
+        System.out.println("birthDate   = " + birthDate);
+
+        try {
+            Student updatedStudent = Main.database.getStudentWithID(id);
+            if (updatedStudent == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "student with id " + id + " not found"
+                );
+            }
+            updatedStudent.setFirstName(firstName);
+            updatedStudent.setLastName(lastName);
+            updatedStudent.setBirthDate(Date.valueOf(birthDate));
+            Main.database.updateExistingStudent(updatedStudent);
+            return updatedStudent;
+        }
+        catch (SQLException e) {
+        throw new ResponseStatusException(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "Failed to update student with id" + id + " in the database"
+        );
+        }
+        }
+
+
 
 
 
