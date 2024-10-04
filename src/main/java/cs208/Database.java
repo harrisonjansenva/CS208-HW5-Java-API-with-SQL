@@ -19,12 +19,10 @@ import java.util.List;
  * test your connection
  * with the SQLite database.
  */
-public class Database
-{
+public class Database {
     private final String sqliteFileName;
 
-    public Database(String sqliteFileName)
-    {
+    public Database(String sqliteFileName) {
         this.sqliteFileName = sqliteFileName;
     }
 
@@ -34,8 +32,7 @@ public class Database
      * @return a connection to the database, which can be used to execute SQL statements against in the database
      * @throws SQLException if we cannot connect to the database (e.g., missing driver)
      */
-    public Connection getDatabaseConnection() throws SQLException
-    {
+    public Connection getDatabaseConnection() throws SQLException {
         // NOTE:
         // 'jdbc' is the protocol or API for connecting from a Java application to a database (SQLite, PostgreSQL, etc.)
         // 'sqlite' is the format of the database (for PostgreSQL, we would use the 'postgresql' format)
@@ -51,9 +48,7 @@ public class Database
 
             connection = DriverManager.getConnection(databaseConnectionURL, sqLiteConfig.toProperties());
             return connection;
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.err.println("SQLException was thrown while trying to connect using the '" + databaseConnectionURL + "' connection URL");
             System.err.println(sqlException.getMessage());
             throw sqlException;
@@ -66,19 +61,17 @@ public class Database
      *
      * @return the version of the driver used to connect to the database (e.g., "3.43.0")
      */
-    public String testConnection()
-    {
+    public String testConnection() {
         // this SELECT statement will retrieve one row with one column containing the
         // version of the driver used to connect to the SQLite database
-        String sql = "SELECT sqlite_version();";
+        String sql = "SELECT SQLITE_VERSION();";
 
         try
-        (
-            Connection connection = getDatabaseConnection();
-            Statement sqlStatement = connection.createStatement();
-            ResultSet resultSet = sqlStatement.executeQuery(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        Statement sqlStatement = connection.createStatement();
+                        ResultSet resultSet = sqlStatement.executeQuery(sql);
+                ) {
             // get to the first (and only) returned record (row)
             resultSet.next();
 
@@ -87,29 +80,25 @@ public class Database
             System.out.println("Connection to Database Successful!");
             System.out.println("Driver version used to connect to the database: " + driverVersionToConnectToTheDatabase);
             return driverVersionToConnectToTheDatabase;
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.err.println("SQLException: failed to query the database");
             System.err.println(sqlException.getMessage());
         }
         return sql;
     }
 
-    public List<Class> listAllClasses()
-    {
+    public List<Class> listAllClasses() {
         String sql =
                 "SELECT id, code, title, description, max_students\n" +
-                "FROM classes;";
+                        "FROM classes;";
 
         ArrayList<Class> listOfClasses = new ArrayList<>();
         try
-        (
-            Connection connection = getDatabaseConnection();
-            Statement sqlStatement = connection.createStatement();
-            ResultSet resultSet = sqlStatement.executeQuery(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        Statement sqlStatement = connection.createStatement();
+                        ResultSet resultSet = sqlStatement.executeQuery(sql);
+                ) {
             //print table header
             printTableHeader(new String[]{"id", "code", "title", "description", "max_students"});
 
@@ -117,8 +106,7 @@ public class Database
             // advances to the next returned record (row)
             // or
             // returns false if there are no more records
-            while (resultSet.next())
-            {
+            while (resultSet.next()) {
                 // extract the values from the current row
                 int id = resultSet.getInt("id");
                 String code = resultSet.getString("code");
@@ -132,9 +120,7 @@ public class Database
                 Class classForCurrentRow = new Class(id, code, title, description, maxStudents);
                 listOfClasses.add(classForCurrentRow);
             }
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to query the classes table. Make sure you executed the schema.sql and seeds.sql scripts");
             System.out.println(sqlException.getMessage());
         }
@@ -142,18 +128,16 @@ public class Database
         return listOfClasses;
     }
 
-    public Class addNewClass(Class newClass) throws SQLException
-    {
+    public Class addNewClass(Class newClass) throws SQLException {
         String sql =
                 "INSERT INTO classes (code, title, description, max_students)\n" +
-                "VALUES (?, ?, ?, ?);";
+                        "VALUES (?, ?, ?, ?);";
 
         try
-        (
-            Connection connection = getDatabaseConnection();
-            PreparedStatement sqlStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ) {
             sqlStatement.setString(1, newClass.getCode());
             sqlStatement.setString(2, newClass.getTitle());
             sqlStatement.setString(3, newClass.getDescription());
@@ -162,12 +146,10 @@ public class Database
             int numberOfRowsAffected = sqlStatement.executeUpdate();
             System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
 
-            if (numberOfRowsAffected > 0)
-            {
+            if (numberOfRowsAffected > 0) {
                 ResultSet resultSet = sqlStatement.getGeneratedKeys();
 
-                while (resultSet.next())
-                {
+                while (resultSet.next()) {
                     // "last_insert_rowid()" is the column name that contains the id of the last inserted row
                     // alternatively, we could have used resultSet.getInt(1); to get the id of the first column returned
                     int generatedIdForTheNewlyInsertedClass = resultSet.getInt("last_insert_rowid()");
@@ -179,9 +161,7 @@ public class Database
 
                 resultSet.close();
             }
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to insert into the classes table");
             System.out.println(sqlException.getMessage());
             throw sqlException;
@@ -190,19 +170,17 @@ public class Database
         return newClass;
     }
 
-    public void updateExistingClassInformation(Class classToUpdate) throws SQLException
-    {
+    public void updateExistingClassInformation(Class classToUpdate) throws SQLException {
         String sql =
                 "UPDATE classes\n" +
-                "SET code = ?, title = ?, description = ?, max_students = ?\n" +
-                "WHERE id = ?;";
+                        "SET code = ?, title = ?, description = ?, max_students = ?\n" +
+                        "WHERE id = ?;";
 
         try
-        (
-            Connection connection = getDatabaseConnection();
-            PreparedStatement sqlStatement = connection.prepareStatement(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql);
+                ) {
             sqlStatement.setString(1, classToUpdate.getCode());
             sqlStatement.setString(2, classToUpdate.getTitle());
             sqlStatement.setString(3, classToUpdate.getDescription());
@@ -212,75 +190,60 @@ public class Database
             int numberOfRowsAffected = sqlStatement.executeUpdate();
             System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
 
-            if (numberOfRowsAffected > 0)
-            {
+            if (numberOfRowsAffected > 0) {
                 System.out.println("SUCCESSFULLY updated the class with id = " + classToUpdate.getId());
-            }
-            else
-            {
+            } else {
                 System.out.println("!!! WARNING: failed to update the class with id = " + classToUpdate.getId());
             }
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to update the class with id = " + classToUpdate.getId());
             System.out.println(sqlException.getMessage());
             throw sqlException;
         }
     }
 
-    public void deleteExistingClass(int idOfClassToDelete) throws SQLException
-    {
+    public void deleteExistingClass(int idOfClassToDelete) throws SQLException {
         String sql =
                 "DELETE FROM classes\n" +
-                "WHERE id = ?;";
+                        "WHERE id = ?;";
 
         try
-        (
-            Connection connection = getDatabaseConnection();
-            PreparedStatement sqlStatement = connection.prepareStatement(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        PreparedStatement sqlStatement = connection.prepareStatement(sql);
+                ) {
             sqlStatement.setInt(1, idOfClassToDelete);
 
             int numberOfRowsAffected = sqlStatement.executeUpdate();
             System.out.println("numberOfRowsAffected = " + numberOfRowsAffected);
 
-            if (numberOfRowsAffected > 0)
-            {
+            if (numberOfRowsAffected > 0) {
                 System.out.println("SUCCESSFULLY deleted the class with id = " + idOfClassToDelete);
-            }
-            else
-            {
+            } else {
                 System.out.println("!!! WARNING: failed to delete the class with id = " + idOfClassToDelete);
             }
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to delete the class with id = " + idOfClassToDelete);
             System.out.println(sqlException.getMessage());
             throw sqlException;
         }
     }
 
-    public List<Student> listAllStudents()
-    {
+    public List<Student> listAllStudents() {
         String sql =
                 "SELECT id, first_name, last_name, birth_date\n" +
-                "FROM students;";
+                        "FROM students;";
 
         ArrayList<Student> listOfStudents = new ArrayList<>();
         try
-        (
-            Connection connection = getDatabaseConnection();
-            Statement sqlStatement = connection.createStatement();
-            ResultSet resultSet = sqlStatement.executeQuery(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        Statement sqlStatement = connection.createStatement();
+                        ResultSet resultSet = sqlStatement.executeQuery(sql);
+                ) {
             printTableHeader(new String[]{"id", "first_name", "last_name", "birth_date"});
 
-            while (resultSet.next())
-            {
+            while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String firstName = resultSet.getString("first_name");
                 String lastName = resultSet.getString("last_name");
@@ -293,9 +256,7 @@ public class Database
                 Student studentForCurrentRow = new Student(id, firstName, lastName, Date.valueOf(birthDate));
                 listOfStudents.add(studentForCurrentRow);
             }
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to query the students table. Make sure you executed the schema.sql and seeds.sql scripts");
             System.out.println(sqlException.getMessage());
         }
@@ -304,27 +265,24 @@ public class Database
     }
 
 
-    public ArrayList<RegisteredStudentJoinResult> listAllRegisteredStudents()
-    {
+    public ArrayList<RegisteredStudentJoinResult> listAllRegisteredStudents() {
         String sql =
                 "SELECT students.id, students.first_name || ' ' || students.last_name AS student_full_name, classes.code, classes.title\n" +
-                "FROM students\n" +
-                "INNER JOIN registered_students ON students.id = registered_students.student_id\n" +
-                "INNER JOIN classes ON classes.id = registered_students.class_id\n" +
-                "ORDER BY students.last_name, students.first_name, classes.code;";
+                        "FROM students\n" +
+                        "INNER JOIN registered_students ON students.id = registered_students.student_id\n" +
+                        "INNER JOIN classes ON classes.id = registered_students.class_id\n" +
+                        "ORDER BY students.last_name, students.first_name, classes.code;";
 
         ArrayList<RegisteredStudentJoinResult> listOfRegisteredStudentJoinResults = new ArrayList<>();
         try
-        (
-            Connection connection = getDatabaseConnection();
-            Statement sqlStatement = connection.createStatement();
-            ResultSet resultSet = sqlStatement.executeQuery(sql);
-        )
-        {
+                (
+                        Connection connection = getDatabaseConnection();
+                        Statement sqlStatement = connection.createStatement();
+                        ResultSet resultSet = sqlStatement.executeQuery(sql);
+                ) {
             printTableHeader(new String[]{"students.id", "student_full_name", "classes.code", "classes.title"});
 
-            while (resultSet.next())
-            {
+            while (resultSet.next()) {
                 int studentId = resultSet.getInt("id");
                 String studentFullName = resultSet.getString("student_full_name");
                 String code = resultSet.getString("code");
@@ -335,9 +293,7 @@ public class Database
                 RegisteredStudentJoinResult registeredStudentJoinResultForCurrentRow = new RegisteredStudentJoinResult(studentId, studentFullName, code, title);
                 listOfRegisteredStudentJoinResults.add(registeredStudentJoinResultForCurrentRow);
             }
-        }
-        catch (SQLException sqlException)
-        {
+        } catch (SQLException sqlException) {
             System.out.println("!!! SQLException: failed to query the registered_students table. Make sure you executed the schema.sql and seeds.sql scripts");
             System.out.println(sqlException.getMessage());
         }
