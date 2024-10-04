@@ -174,6 +174,7 @@ public class StudentsController
 
 
 
+
     /**
      * DELETE /students/{id}
      *
@@ -182,5 +183,27 @@ public class StudentsController
      * @throws ResponseStatusException: a 404 status code if the student with id = {id} does not exist
      */
     // TODO: implement this route
+    @DeleteMapping(value = "/students/{id}")
+    String delete(@PathVariable("id") int id)
+    {
+        System.out.println("id = " + id);
+        try
+        {
+            Student studentToDelete = Main.database.getStudentWithID(id);
+            if (studentToDelete == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "student with id " + id + " not found"
+                );
+            }
+            Main.database.deleteExistingStudent(id);
+        } catch (SQLException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Failed to delete student with id" + id + " in the database"
+            );
+        }
+        return "student with id " + id + " deleted";
+    }
 
 }
