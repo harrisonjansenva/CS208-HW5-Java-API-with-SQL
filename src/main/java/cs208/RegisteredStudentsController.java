@@ -83,6 +83,31 @@ public class RegisteredStudentsController
      */
     // TODO: implement this route
 
+    @DeleteMapping("/drop_student_from_class")
+    String remove_from_class(
+            @RequestParam("studentID") int studentID,
+            @RequestParam("classID") int classID
+    )
+    {
+        System.out.println("student id: " + studentID);
+        System.out.println("id of class to remove from: " + classID);
+        Student testStudent = Main.database.getStudentWithID(studentID);
+        Class testClass = Main.database.getClassWithId(classID);
+        if (testStudent == null || testClass == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student or class not found");
+        }
+        try {
+            Main.database.dropStudentFromClass(studentID, classID);
+            return "Student with id " + studentID + " removed from the class " + classID;
+
+        } catch (SQLException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Failed to remove student from class " + classID
+            );
+        }
+    }
+
 
 
     /**
